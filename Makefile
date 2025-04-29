@@ -62,8 +62,8 @@ $(info )
 
 # On linux use xabuild, on Windows use MSBuild.exe, otherwise (macos?) use msbuild.
 ifeq ($(detected_OS),Linux)
-  MSBUILD_binary := xabuild
-  MSBUILD := $(shell $(WHICH) $(MSBUILD_binary))
+  MSBUILD_binary := dotnet
+  MSBUILD := $(shell $(WHICH) $(MSBUILD_binary)) build
 else ifeq ($(detected_OS),Windows)
   MSBUILD_binary := MSBuild.exe
   MSBUILD := $(shell $(WHICH) $(MSBUILD_binary) 2> nul)
@@ -296,15 +296,15 @@ $(OUTPUT_PluginQR): $(INPUT_PluginQR)
 
 ##### Nuget Dependencies
 
-nuget: stamp.nuget_$(Flavor)
-stamp.nuget_$(Flavor): src/KeePass.sln $(wildcard src/*/*.csproj) $(wildcard src/*/packages.config)
-ifeq ($(shell $(WHICH) nuget),)
-	$(error "nuget" command not found. Check it is in your PATH)
-endif
-	$(RMFILE) stamp.nuget_*
-	nuget restore src/KeePass.sln
-	$(MSBUILD) src/KeePass.sln -t:restore $(MSBUILD_PARAM) -p:RestorePackagesConfig=true
-	@echo "" > stamp.nuget_$(Flavor)
+	nuget: stamp.nuget_$(Flavor)
+	stamp.nuget_$(Flavor): src/KeePass.sln $(wildcard src/*/*.csproj) $(wildcard src/*/packages.config)
+	ifeq ($(shell $(WHICH) nuget),)
+		$(error "nuget" command not found. Check it is in your PATH)
+	endif
+		$(RMFILE) stamp.nuget_*
+		nuget restore src/KeePass.sln
+		$(MSBUILD) src/KeePass.sln -t:restore $(MSBUILD_PARAM) -p:RestorePackagesConfig=true
+		@echo "" > stamp.nuget_$(Flavor)
 
 manifestlink:
 	$(info Creating hardlink for manifest of Flavor: $(Flavor))
